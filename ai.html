@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI小助手 - 您的智能伙伴</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .navbar {
+            background-color: #2c3e50;
+            padding: 1rem;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #3498db;
+        }
+
+        .main-content {
+            margin-top: 60px;
+            display: flex;
+            min-height: calc(100vh - 60px);
+        }
+
+        .left-panel {
+            flex: 1;
+            padding: 2rem;
+            background: white;
+            border-right: 1px solid #eee;
+            overflow-y: auto;
+            height: calc(100vh - 60px);
+            position: sticky;
+            top: 60px;
+        }
+
+        .right-panel {
+            flex: 2;
+            padding: 2rem;
+            background: #f8f9fa;
+            height: calc(100vh - 60px);
+            overflow-y: auto;
+        }
+
+        .chat-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        #chat-messages {
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .message {
+            margin: 1rem 0;
+            padding: 1rem;
+            border-radius: 10px;
+            max-width: 80%;
+            word-wrap: break-word;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .user-message {
+            background-color: #e3f2fd;
+            margin-left: auto;
+            text-align: right;
+            color: #1565c0;
+        }
+
+        .ai-message {
+            background-color: #f5f5f5;
+            margin-right: auto;
+            color: #333;
+        }
+
+        .chat-input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #3498db;
+            border-radius: 5px;
+            margin-top: 1rem;
+            font-size: 16px;
+            resize: none;
+            min-height: 60px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .send-button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 5px;
+            margin-top: 1rem;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .send-button:hover {
+            background: #2980b9;
+        }
+
+        .send-button:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        .typing-indicator {
+            padding: 1rem;
+            display: none;
+        }
+
+        .typing-indicator span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: #3498db;
+            border-radius: 50%;
+            margin: 0 2px;
+            animation: bounce 1.4s infinite ease-in-out;
+        }
+
+        .section {
+            margin-bottom: 3rem;
+        }
+
+        .section-title {
+            color: #2c3e50;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
+            transition: transform 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .social-links a {
+            color: #3498db;
+            text-decoration: none;
+            font-size: 24px;
+            margin: 0 10px;
+            transition: color 0.3s;
+        }
+
+        .social-links a:hover {
+            color: #2980b9;
+        }
+
+        .history-message {
+            opacity: 0.7;
+            font-size: 0.9em;
+        }
+
+        .message-time {
+            font-size: 0.8em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .chat-header {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 1rem;
+        }
+
+        .clear-button {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        .clear-button:hover {
+            background: #c0392b;
+        }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+
+            .left-panel, .right-panel {
+                flex: none;
+                width: 100%;
+                height: auto;
+                position: static;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-links">
+            <a href="#chat">对话</a>
+            <a href="#about">关于</a>
+            <a href="#features">功能</a>
+            <a href="#contact">联系</a>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        <div class="left-panel">
+            <div class="section" id="about">
+                <h2 class="section-title">关于我</h2>
+                <p>我是AI智能助手扬剑，擅长中英文对话，可以：</p>
+                <ul>
+                    <li>回答各类知识问题</li>
+                    <li>协助文案写作</li>
+                    <li>提供学习建议</li>
+                    <li>解答技术难题</li>
+                </ul>
+            </div>
+
+            <div class="section" id="features">
+                <h2 class="section-title">核心功能</h2>
+                <div class="feature-card">
+                    <div class="feature-icon">💡</div>
+                    <h3>智能问答</h3>
+                    <p>准确回答问题，提供详细解释</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">✍️</div>
+                    <h3>文本创作</h3>
+                    <p>协助撰写各类文本内容</p>
+                </div>
+            </div>
+
+            <div class="section" id="contact">
+                <h2 class="section-title">联系我们</h2>
+                <p>📧 邮箱：1652297577@qq.com</p>
+                <div class="social-links">
+                    <a href="#" target="_blank"><i class="fab fa-weixin"></i></a>
+                    <a href="#" target="_blank"><i class="fab fa-github"></i></a>
+                </div>
+            </div>
+        </div>
+
+        <div class="right-panel">
+            <div class="chat-container" id="chat">
+                <h2 class="section-title">AI助手对话</h2>
+                <div class="chat-header">
+                    <button class="clear-button">清除对话</button>
+                </div>
+                <div id="chat-messages"></div>
+                <div class="typing-indicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <textarea class="chat-input" placeholder="请输入您的问题..." rows="3"></textarea>
+                <button class="send-button">发送</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import OpenAI from 'https://esm.sh/openai@4.24.1';
+
+        const chatMessages = document.getElementById('chat-messages');
+        const chatInput = document.querySelector('.chat-input');
+        const sendButton = document.querySelector('.send-button');
+        const typingIndicator = document.querySelector('.typing-indicator');
+        const HISTORY_KEY = 'chat_history';
+        const clearButton = document.querySelector('.clear-button');
+        const client = new OpenAI({
+            apiKey: "sk-cnGptblN2yNfgX7GeRAv3HpCUSJQfT80NZYAkhHRF0aBsMpO",
+            baseURL: "https://api.moonshot.cn/v1",
+            dangerouslyAllowBrowser: true
+        });
+
+        let messageHistory = [
+            {
+                "role": "system", 
+                "content": "你必须始终记住：你的名字是'扬剑'，而不是其他任何名字。你是一个专业的AI助手，擅长中英文对话。你必须始终以扬剑的身份回答问题，提供安全、有帮助、准确的回答。如果有人问你是谁，你必须明确表示你是扬剑。"
+            }
+        ];
+
+        function loadHistory() {
+            const history = localStorage.getItem(HISTORY_KEY);
+            if (history) {
+                const messages = JSON.parse(history);
+                messages.forEach(msg => {
+                    if (msg.role !== 'system') {
+                        addMessage(msg.content, msg.role === 'user' ? 'user' : 'ai', true);
+                    }
+                });
+                messageHistory = messages;
+            }
+        }
+
+        function saveHistory() {
+            localStorage.setItem(HISTORY_KEY, JSON.stringify(messageHistory));
+        }
+
+        async function sendMessage() {
+            const message = chatInput.value.trim();
+            if (message) {
+                try {
+                    addMessage(message, 'user');
+                    messageHistory.push({ "role": "user", "content": message });
+                    
+                    chatInput.disabled = true;
+                    sendButton.disabled = true;
+                    typingIndicator.style.display = 'block';
+                    
+                    const completion = await client.chat.completions.create({
+                        model: "moonshot-v1-8k",
+                        messages: messageHistory,
+                        temperature: 0.3,
+                        stream: true
+                    });
+
+                    const aiMessageDiv = document.createElement('div');
+                    aiMessageDiv.classList.add('message', 'ai-message');
+                    chatMessages.appendChild(aiMessageDiv);
+
+                    let aiMessage = '';
+
+                    for await (const chunk of completion) {
+                        const content = chunk.choices[0]?.delta?.content;
+                        if (content) {
+                            aiMessage += content;
+                            aiMessageDiv.textContent = aiMessage;
+                            chatMessages.scrollTop = chatMessages.scrollHeight;
+                        }
+                    }
+
+                    messageHistory.push({ "role": "assistant", "content": aiMessage });
+                    saveHistory();
+                    
+                } catch (error) {
+                    console.error('发送消息时出错:', error);
+                    let errorMessage = '抱歉，发生了一些错误。';
+                    
+                    if (error.status === 401) {
+                        errorMessage = 'API密钥无效，请检查您的API密钥设置。';
+                    } else if (error.status === 429) {
+                        errorMessage = '请求过于频繁，请稍后再试。';
+                    } else if (error.status === 500) {
+                        errorMessage = '服务器内部错误，请稍后重试。';
+                    }
+                    
+                    addMessage(errorMessage, 'ai');
+                } finally {
+                    chatInput.disabled = false;
+                    sendButton.disabled = false;
+                    typingIndicator.style.display = 'none';
+                    chatInput.value = '';
+                    chatInput.focus();
+                }
+            }
+        }
+
+        function addMessage(text, sender, isHistory = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', `${sender}-message`);
+            if (isHistory) {
+                messageDiv.classList.add('history-message');
+            }
+            
+            const textDiv = document.createElement('div');
+            textDiv.textContent = text;
+            messageDiv.appendChild(textDiv);
+            
+            const timeDiv = document.createElement('div');
+            timeDiv.classList.add('message-time');
+            timeDiv.textContent = new Date().toLocaleString();
+            messageDiv.appendChild(timeDiv);
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function clearChat() {
+            // 清除显示的消息
+            chatMessages.innerHTML = '';
+            
+            // 重置消息历史到初始状态
+            messageHistory = [
+                {
+                    "role": "system", 
+                    "content": "你必须始终记住：你的名字是'扬剑'，而不是其他任何名字。你是一个专业的AI助手，擅长中英文对话。你必须始终以扬剑的身份回答问题，提供安全、有帮助、准确的回答。如果有人问你是谁，你必须明确表示你是扬剑。"
+                }
+            ];
+            
+            // 清除本地存储
+            localStorage.removeItem(HISTORY_KEY);
+            
+            // 添加提示消息
+            addMessage("对话历史已清除", 'ai');
+        }
+
+        sendButton.addEventListener('click', sendMessage);
+
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        chatInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            const newHeight = Math.min(200, Math.max(60, this.scrollHeight));
+            this.style.height = newHeight + 'px';
+        });
+
+        clearButton.addEventListener('click', () => {
+            if (confirm('确定要清除所有对话历史吗？')) {
+                clearChat();
+            }
+        });
+
+        // 页面加载时加载历史消息
+        loadHistory();
+    </script>
+</body>
+</html>
